@@ -24,14 +24,10 @@
             android:entryValues="@array/displayed_book_details_values"
             android:defaultValue="@array/displayed_book_details_default"/>
 
-        <EditTextPreference
+        <ListPreference
             android:key="@string/pref_key_share_notebook"
             android:title="@string/default_notebook"
-            android:selectAllOnFocus="true"
-            android:inputType="text"
-            android:singleLine="true"
-            android:dialogMessage="@string/default_notebook_desc"
-            android:defaultValue="@string/default_share_notebook"
+            android:dialogTitle="@string/default_notebook"
             app:useSimpleSummaryProvider="true"/>
 
         <SwitchPreference

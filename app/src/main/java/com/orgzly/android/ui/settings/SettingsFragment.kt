@@ -40,7 +40,8 @@ import javax.inject.Inject
 /**
  * Displays settings.
  */
-class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+class SettingsFragment : PreferenceFragmentCompat(),
+    SharedPreferences.OnSharedPreferenceChangeListener {
     private var listener: Listener? = null
 
     @Inject
@@ -84,14 +85,20 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         preference(R.string.pref_key_export_settings)?.let {
             it.setOnPreferenceClickListener {
-                SettingsExportFragment().show(childFragmentManager, SettingsExportFragment.FRAGMENT_TAG)
+                SettingsExportFragment().show(
+                    childFragmentManager,
+                    SettingsExportFragment.FRAGMENT_TAG
+                )
                 true
             }
         }
 
         preference(R.string.pref_key_import_settings)?.let {
             it.setOnPreferenceClickListener {
-                SettingsImportFragment().show(childFragmentManager, SettingsImportFragment.FRAGMENT_TAG)
+                SettingsImportFragment().show(
+                    childFragmentManager,
+                    SettingsImportFragment.FRAGMENT_TAG
+                )
                 true
             }
         }
@@ -158,6 +165,34 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         updateRemindersScreen()
         updateWidgetScreen()
         setupCalendarSyncSearchPreference()
+
+        val pref = preference(R.string.pref_key_share_notebook) as? ListPreference ?: return
+
+        val entries = ArrayList<CharSequence>()
+        val entryValues = ArrayList<CharSequence>()
+        var defaultValue: CharSequence = "Inbox"
+
+        // Add saved searches
+        try {
+            val books = dataRepository.getBooks();
+            defaultValue = books.first().book.name;
+
+            if(books.isEmpty()){
+                pref.isEnabled = false;
+                pref.summary = "No notebooks available :)."
+            }
+
+            for (book in books) {
+                entries.add(book.book.name)
+                entryValues.add(book.book.name)
+            }
+        } catch (e: Exception) {
+            LogUtils.d(TAG, "Failed to load existing books")
+        }
+
+        pref.entries = entries.toTypedArray()
+        pref.entryValues = entryValues.toTypedArray()
+        pref.setDefaultValue(defaultValue)
     }
 
     private fun setupCalendarSyncSearchPreference() {
@@ -213,36 +248,41 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         when (preference) {
             is StatesPreference ->
                 displayCustomPreferenceDialogFragment(
-                        StatesPreferenceFragment.getInstance(preference),
-                        StatesPreferenceFragment.FRAGMENT_TAG)
+                    StatesPreferenceFragment.getInstance(preference),
+                    StatesPreferenceFragment.FRAGMENT_TAG
+                )
 
             is IntegerPreference ->
                 displayCustomPreferenceDialogFragment(
-                        IntegerPreferenceFragment.getInstance(preference),
-                        IntegerPreferenceFragment.FRAGMENT_TAG)
+                    IntegerPreferenceFragment.getInstance(preference),
+                    IntegerPreferenceFragment.FRAGMENT_TAG
+                )
 
             is TimePreference ->
                 displayCustomPreferenceDialogFragment(
-                        TimePreferenceFragment.getInstance(preference),
-                        TimePreferenceFragment.FRAGMENT_TAG)
+                    TimePreferenceFragment.getInstance(preference),
+                    TimePreferenceFragment.FRAGMENT_TAG
+                )
 
             is NotePopupPreference ->
                 displayCustomPreferenceDialogFragment(
                     NotePopupPreferenceFragment.getInstance(preference),
-                    NotePopupPreferenceFragment.FRAGMENT_TAG)
+                    NotePopupPreferenceFragment.FRAGMENT_TAG
+                )
 
             is ColorPickerPreference ->
                 displayCustomPreferenceDialogFragment(
                     ColorPickerDialogFragment.newInstance(preference.key),
-                    ColorPickerDialogFragment.FRAGMENT_TAG)
+                    ColorPickerDialogFragment.FRAGMENT_TAG
+                )
 
             else -> super.onDisplayPreferenceDialog(preference)
         }
     }
 
     private fun displayCustomPreferenceDialogFragment(
-            fragment: PreferenceDialogFragmentCompat,
-            tag: String
+        fragment: PreferenceDialogFragmentCompat,
+        tag: String
     ) {
         fragmentManager?.let {
             fragment.setTargetFragment(this, 0)
@@ -257,7 +297,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         /* Start to listen for any preference changes. */
         PreferenceManager.getDefaultSharedPreferences(requireActivity())
-                .registerOnSharedPreferenceChangeListener(this)
+            .registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
@@ -265,7 +305,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         /* Stop listening for preference changed. */
         PreferenceManager.getDefaultSharedPreferences(requireActivity())
-                .unregisterOnSharedPreferenceChangeListener(this)
+            .unregisterOnSharedPreferenceChangeListener(this)
     }
 
     override fun onDetach() {
@@ -318,7 +358,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 if (AppPreferences.newNoteNotification(context)) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         AppPermissions.isGrantedOrRequest(
-                            activity, AppPermissions.Usage.POST_NOTIFICATIONS)
+                            activity, AppPermissions.Usage.POST_NOTIFICATIONS
+                        )
                     }
                     Notifications.showOngoingNotification(context)
                 } else {
@@ -381,7 +422,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     // Ensure notifications permission
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         AppPermissions.isGrantedOrRequest(
-                            activity, AppPermissions.Usage.POST_NOTIFICATIONS)
+                            activity, AppPermissions.Usage.POST_NOTIFICATIONS
+                        )
                     }
                 }
             }
@@ -394,7 +436,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     // Ensure notifications permission
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         AppPermissions.isGrantedOrRequest(
-                            activity, AppPermissions.Usage.POST_NOTIFICATIONS)
+                            activity, AppPermissions.Usage.POST_NOTIFICATIONS
+                        )
                     }
                 }
             }
@@ -407,7 +450,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     // Ensure notifications permission
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         AppPermissions.isGrantedOrRequest(
-                            activity, AppPermissions.Usage.POST_NOTIFICATIONS)
+                            activity, AppPermissions.Usage.POST_NOTIFICATIONS
+                        )
                     }
                 }
             }
@@ -428,7 +472,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 if (AppPreferences.imagesEnabled(context)) {
                     Handler().post {
                         AppPermissions.isGrantedOrRequest(
-                                activity, AppPermissions.Usage.EXTERNAL_FILES_ACCESS)
+                            activity, AppPermissions.Usage.EXTERNAL_FILES_ACCESS
+                        )
                     }
                 }
             }
@@ -438,7 +483,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 if (AppPreferences.showSyncNotifications(context)) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         AppPermissions.isGrantedOrRequest(
-                            activity, AppPermissions.Usage.POST_NOTIFICATIONS)
+                            activity, AppPermissions.Usage.POST_NOTIFICATIONS
+                        )
                     }
                 }
             }
@@ -447,7 +493,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             getString(R.string.pref_key_calendar_sync_enable) -> {
                 if (AppPreferences.isCalendarSyncEnabled(requireContext())) {
                     AppPermissions.isGrantedOrRequest(
-                        activity, AppPermissions.Usage.CALENDAR_SYNC)
+                        activity, AppPermissions.Usage.CALENDAR_SYNC
+                    )
 
                     val calendarRequest = OneTimeWorkRequestBuilder<CalendarWorker>().build()
                     WorkManager.getInstance(requireContext()).enqueue(calendarRequest)
@@ -490,9 +537,9 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         if (scheduled != null && deadline != null && event != null) {
             val remindersEnabled =
-                    (scheduled as TwoStatePreference).isChecked
-                            || (deadline as TwoStatePreference).isChecked
-                            || (event as TwoStatePreference).isChecked
+                (scheduled as TwoStatePreference).isChecked
+                        || (deadline as TwoStatePreference).isChecked
+                        || (event as TwoStatePreference).isChecked
 
             /* These do not exist on Oreo and later */
             preference(R.string.pref_key_reminders_sound)?.isEnabled = remindersEnabled
@@ -500,7 +547,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             preference(R.string.pref_key_reminders_vibrate)?.isEnabled = remindersEnabled
 
             /* This does not exist before Oreo. */
-            preference(R.string.pref_key_reminders_channel_notification_settings)?.isEnabled = remindersEnabled
+            preference(R.string.pref_key_reminders_channel_notification_settings)?.isEnabled =
+                remindersEnabled
 
             preference(R.string.pref_key_snooze_time)?.isEnabled = remindersEnabled
             preference(R.string.pref_key_snooze_type)?.isEnabled = remindersEnabled
@@ -583,17 +631,17 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
          */
         @JvmField
         val PREFS_RESOURCES: HashMap<String, Int> = hashMapOf(
-                "prefs_screen_look_and_feel" to R.xml.prefs_screen_look_and_feel,
-                "prefs_screen_notebooks" to R.xml.prefs_screen_notebooks,
-                "prefs_screen_notifications" to R.xml.prefs_screen_notifications,
-                "prefs_screen_reminders" to R.xml.prefs_screen_reminders,
-                "prefs_screen_sync" to R.xml.prefs_screen_sync,
-                "prefs_screen_auto_sync" to R.xml.prefs_screen_auto_sync, // Sub-screen
-                "prefs_screen_org_file_format" to R.xml.prefs_screen_org_file_format, // Sub-screen
-                "prefs_screen_org_mode_tags_indent" to R.xml.prefs_screen_org_mode_tags_indent, // Sub-screen
-                "prefs_screen_widget" to R.xml.prefs_screen_widget, // Sub-screen
-                "prefs_screen_developer" to R.xml.prefs_screen_developer, // Sub-screen
-                "prefs_screen_app" to R.xml.prefs_screen_app
+            "prefs_screen_look_and_feel" to R.xml.prefs_screen_look_and_feel,
+            "prefs_screen_notebooks" to R.xml.prefs_screen_notebooks,
+            "prefs_screen_notifications" to R.xml.prefs_screen_notifications,
+            "prefs_screen_reminders" to R.xml.prefs_screen_reminders,
+            "prefs_screen_sync" to R.xml.prefs_screen_sync,
+            "prefs_screen_auto_sync" to R.xml.prefs_screen_auto_sync, // Sub-screen
+            "prefs_screen_org_file_format" to R.xml.prefs_screen_org_file_format, // Sub-screen
+            "prefs_screen_org_mode_tags_indent" to R.xml.prefs_screen_org_mode_tags_indent, // Sub-screen
+            "prefs_screen_widget" to R.xml.prefs_screen_widget, // Sub-screen
+            "prefs_screen_developer" to R.xml.prefs_screen_developer, // Sub-screen
+            "prefs_screen_app" to R.xml.prefs_screen_app
         )
 
         fun getInstance(res: String? = null): SettingsFragment {
@@ -611,10 +659,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         try {
             val colorHex = AppPreferences.calendarColor(context)
             val calendarColor = colorHex.toColorInt()
-            
+
             // Get calendar ID
             val projection = arrayOf(android.provider.CalendarContract.Calendars._ID)
-            val selection = "${android.provider.CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${android.provider.CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
+            val selection =
+                "${android.provider.CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${android.provider.CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
             val selectionArgs = arrayOf("Orgzly", "com.orgzly.android")
 
             context.contentResolver.query(
@@ -626,19 +675,31 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             )?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val calendarId = cursor.getLong(0)
-                    
+
                     // Update calendar color
                     val values = android.content.ContentValues().apply {
-                        put(android.provider.CalendarContract.Calendars.CALENDAR_COLOR, calendarColor)
+                        put(
+                            android.provider.CalendarContract.Calendars.CALENDAR_COLOR,
+                            calendarColor
+                        )
                     }
                     val uri = android.provider.CalendarContract.Calendars.CONTENT_URI
                         .buildUpon()
-                        .appendQueryParameter(android.provider.CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                        .appendQueryParameter(android.provider.CalendarContract.Calendars.ACCOUNT_NAME, "Orgzly")
-                        .appendQueryParameter(android.provider.CalendarContract.Calendars.ACCOUNT_TYPE, "com.orgzly.android")
+                        .appendQueryParameter(
+                            android.provider.CalendarContract.CALLER_IS_SYNCADAPTER,
+                            "true"
+                        )
+                        .appendQueryParameter(
+                            android.provider.CalendarContract.Calendars.ACCOUNT_NAME,
+                            "Orgzly"
+                        )
+                        .appendQueryParameter(
+                            android.provider.CalendarContract.Calendars.ACCOUNT_TYPE,
+                            "com.orgzly.android"
+                        )
                         .appendPath(calendarId.toString())
                         .build()
-                    
+
                     context.contentResolver.update(uri, values, null, null)
                 }
             }

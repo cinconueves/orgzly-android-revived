@@ -1,5 +1,6 @@
 package com.orgzly.android.ui.share;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -303,6 +304,7 @@ public class ShareActivity extends CommonActivity
                 0, ActivityUtils.immutable(PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
+    @NonNull
     public static Intent createNewNoteIntent(Context context) {
         Intent intent = new Intent(context, ShareActivity.class);
         intent.setAction(Intent.ACTION_SEND);

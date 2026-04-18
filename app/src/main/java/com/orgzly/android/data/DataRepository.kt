@@ -3,16 +3,19 @@ package com.orgzly.android.data
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.text.TextUtils
+import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.google.gson.Gson
@@ -351,6 +354,18 @@ class DataRepository @Inject constructor(
         }
 
         db.book().delete(book.book)
+
+        val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.context)
+        val prefKey = context.getString(R.string.pref_key_share_notebook);
+        // If deleted book was the selected one, select the first one
+        val firstBook = getBooks().first();
+        val selectedBookName: String = prefs.getString(prefKey, "Inbox")!!
+        if (selectedBookName == java.lang.String.valueOf(book.book.name)) {
+            prefs.edit {
+                putString(firstBook.book.name, "Inbox") // or set to a fallback value
+            }
+        }
+
     }
 
     fun renameBook(bookView: BookView, name: String) {

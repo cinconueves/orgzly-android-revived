@@ -1,6 +1,11 @@
 package com.orgzly.android.data
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceManager
+import com.orgzly.R
 import com.orgzly.android.db.OrgzlyDatabase
 import com.orgzly.android.db.entity.DbRepoBook
 import com.orgzly.android.repos.RepoType
@@ -10,10 +15,13 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.content.edit
+
 
 @Singleton
-class DbRepoBookRepository @Inject constructor(db: OrgzlyDatabase) {
+class DbRepoBookRepository @Inject constructor(db: OrgzlyDatabase, context: Context) {
     private val dbRepoBook = db.dbRepoBook()
+    private val context = context.applicationContext
 
     fun getBooks(repoId: Long, repoUri: Uri): List<VersionedRook> {
         return dbRepoBook.getAllByRepo(repoUri.toString()).map {
@@ -74,10 +82,22 @@ class DbRepoBookRepository @Inject constructor(db: OrgzlyDatabase) {
     @Throws(IOException::class)
     fun deleteBook(uri: Uri): Int {
         val uriString = uri.toString()
-        if (dbRepoBook.getByUrl(uriString) == null) {
+        val book = dbRepoBook.getByUrl(uriString)
+        if (book == null) {
             throw IOException("Book $uri does not exist")
         } else {
-            return dbRepoBook.deleteByUrl(uriString)
+            val returnVal = dbRepoBook.deleteByUrl(uriString)
+
+            val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.context)
+            val prefKey = context.getString(R.string.pref_key_share_notebook);
+            // If deleted book was the selected one, select the first one
+            val selectedBookName: String = prefs.getString(prefKey, "Inbox")!!
+            if (selectedBookName == java.lang.String.valueOf(book.url)) {
+                prefs.edit {
+                    putString(prefKey, "Inbox") // or set to a fallback value
+                }
+            }
+            return returnVal;
         }
     }
 }
